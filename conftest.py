@@ -3,12 +3,26 @@ from api.client import ScooterApiClient
 from utils.generators import generate_courier_data
 
 @pytest.fixture
-def api_client():
-    """Фикстура для API клиента"""
-    return ScooterApiClient()
+def courier_data():
+    api_client = ScooterApiClient()
+    courier_data = generate_courier_data()
+    """Фикстура для генерации данных курьера"""
+    yield courier_data
+    login_response = api_client.login_courier(
+                courier_data["login"],
+                courier_data["password"]
+            )
+    # Очистка - удаляем созданного курьера
+    courier_id = login_response.json().get("id")
+    if courier_id:
+        api_client.delete_courier(courier_id)
+
 
 @pytest.fixture
-def registered_courier(api_client):
+def registered_courier():
+
+    api_client = ScooterApiClient()
+
     """Фикстура для создания и удаления тестового курьера"""
     courier_data = generate_courier_data()
     
